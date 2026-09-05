@@ -1,4 +1,4 @@
-<![CDATA[# 🏭 Sovereign AI Workbench
+# 🏭 Sovereign AI Workbench
 
 ### Problem Statement ID: **PS-26117** — SIH 2026
 
@@ -8,207 +8,341 @@
 
 ## 📌 What Is This Project?
 
-Imagine you work in an oil refinery or a power plant. Every day, engineers deal with:
-- 📄 Hundreds of inspection reports (PDF scans, handwritten notes)
-- 🔧 Maintenance procedures that must follow strict safety rules (SOPs)
-- 📊 Sensor data from machines (temperature, vibration, pressure)
-- 🖼️ Photos of equipment that need expert analysis
-- 📝 Official reports that must be generated quickly
-
-**This project is an AI assistant that helps with ALL of these tasks — but with one critical rule:**
-
-> ### 🔒 Everything stays on YOUR computer. Zero data goes to the internet.
-
-No ChatGPT. No cloud APIs. No data leaks. The AI models run **locally on your own machine**, making it safe for **confidential industrial operations**.
-
----
-
-## 🎯 Key Features (What Can It Do?)
-
-| Feature | What It Does | Who Uses It |
-|---------|-------------|-------------|
-| 📄 **Document Analysis** | Upload a PDF inspection report → AI reads it, checks it against safety rules, and creates an official approval note | Engineers, Safety Officers |
-| 💬 **Knowledge Assistant** | Ask questions in plain English → AI searches your uploaded documents and gives answers with sources | Anyone on the team |
-| 🖼️ **Vision Analysis** | Upload a photo of equipment → AI describes what it sees (damage, labels, hazards) | Field Inspectors |
-| 🔧 **Maintenance Agent** | Describe symptoms → AI finds matching procedures and safety checks | Maintenance Crew |
-| ⚠️ **Safety Agent** | Get instant safety recommendations, PPE requirements, and emergency procedures | Safety Officers |
-| 📊 **Analytics Agent** | Upload sensor data (CSV) → AI finds anomalies and threshold violations | Data Analysts |
-| 📝 **Report Generator** | Auto-generate professional maintenance/safety reports | Managers |
-| 🎤 **Voice Notes** | Speak into your mic → AI converts speech to text | Field Workers |
-| 💻 **Coding Agent** | AI writes & runs Python scripts for engineering calculations — in a sandboxed environment | Engineers |
-| 🛡️ **Security Monitor** | Real-time dashboard showing "zero data leaked" status | IT / Compliance |
-
----
-
-## 🧠 AI Models Used
-
-> **All models run locally on your computer using [Ollama](https://ollama.com).**
-> No internet connection is needed after initial setup.
-
 ```mermaid
 graph LR
-    A["🧠 AI Models<br/>(All Local)"] --> B["👁️ Vision Model"]
-    A --> C["🤔 Reasoning Model"]
-    A --> D["💻 Coding Model"]
-    A --> E["📚 Embedding Model"]
-    A --> F["🎤 Speech Model"]
+    PROBLEM["🏭 Industrial Plant<br/>Challenges"]
+    
+    PROBLEM --> P1["📄 100s of inspection<br/>reports to read"]
+    PROBLEM --> P2["🔧 Strict safety rules<br/>(SOPs) to follow"]
+    PROBLEM --> P3["📊 Sensor data with<br/>hidden anomalies"]
+    PROBLEM --> P4["🖼️ Equipment photos<br/>needing expert eyes"]
+    PROBLEM --> P5["📝 Reports that take<br/>hours to write"]
 
-    B --> B1["qwen2.5vl:3b<br/>Reads images & scanned PDFs"]
-    C --> C1["qwen2.5vl:3b<br/>Answers questions & analyzes reports"]
-    D --> D1["qwen2.5vl:3b<br/>Writes Python scripts"]
-    E --> E1["all-MiniLM-L6-v2<br/>Searches documents by meaning"]
-    F --> F1["Whisper (base)<br/>Converts speech to text"]
+    SOLUTION["🤖 Sovereign AI<br/>Workbench"]
 
-    style A fill:#1a1a2e,stroke:#e94560,color:#fff
-    style B fill:#16213e,stroke:#0f3460,color:#fff
-    style C fill:#16213e,stroke:#0f3460,color:#fff
-    style D fill:#16213e,stroke:#0f3460,color:#fff
-    style E fill:#16213e,stroke:#0f3460,color:#fff
-    style F fill:#16213e,stroke:#0f3460,color:#fff
+    P1 --> SOLUTION
+    P2 --> SOLUTION
+    P3 --> SOLUTION
+    P4 --> SOLUTION
+    P5 --> SOLUTION
+
+    SOLUTION --> R1["✅ AI reads & analyzes<br/>documents in seconds"]
+    SOLUTION --> R2["✅ Auto-checks against<br/>safety procedures"]
+    SOLUTION --> R3["✅ Detects anomalies<br/>& threshold violations"]
+    SOLUTION --> R4["✅ Analyzes images<br/>for damage & hazards"]
+    SOLUTION --> R5["✅ Generates reports<br/>automatically"]
+
+    style PROBLEM fill:#da3633,stroke:#f85149,color:#fff
+    style SOLUTION fill:#238636,stroke:#2ea043,color:#fff
+    style P1 fill:#161b22,stroke:#f78166,color:#fff
+    style P2 fill:#161b22,stroke:#f78166,color:#fff
+    style P3 fill:#161b22,stroke:#f78166,color:#fff
+    style P4 fill:#161b22,stroke:#f78166,color:#fff
+    style P5 fill:#161b22,stroke:#f78166,color:#fff
+    style R1 fill:#0d1117,stroke:#3fb950,color:#fff
+    style R2 fill:#0d1117,stroke:#3fb950,color:#fff
+    style R3 fill:#0d1117,stroke:#3fb950,color:#fff
+    style R4 fill:#0d1117,stroke:#3fb950,color:#fff
+    style R5 fill:#0d1117,stroke:#3fb950,color:#fff
 ```
 
-| Model | Name | What It Does | Where It Runs |
-|-------|------|-------------|---------------|
-| 👁️ **Vision** | `qwen2.5vl:3b` | Reads images, scanned PDFs, gauges, labels, and equipment photos | Ollama (localhost) |
-| 🤔 **Reasoning** | `qwen2.5vl:3b` | Understands questions, analyzes reports, checks SOP compliance | Ollama (localhost) |
-| 💻 **Coding** | `qwen2.5vl:3b` | Generates Python scripts for engineering calculations | Ollama (localhost) |
-| 📚 **Embedding** | `all-MiniLM-L6-v2` | Converts text into numbers so the system can search documents by *meaning*, not just keywords | HuggingFace (cached locally) |
-| 🎤 **Speech** | `faster-whisper (base)` | Converts spoken audio into written text | CPU (local) |
+> ### 🔒 The #1 Rule: Everything stays on YOUR computer. Zero data goes to the internet.
 
 ---
 
-## 🏗️ How It Works — The Big Picture
+## 🎯 Features At A Glance
+
+| # | Feature | Input | Output | Agent |
+|---|---------|-------|--------|-------|
+| 1 | 📄 **Document Analysis** | PDF inspection report | Official approval note (.docx) | Document Agent |
+| 2 | 💬 **Knowledge Q&A** | Plain English question | Answer with cited sources | Knowledge Assistant |
+| 3 | 👁️ **Vision Analysis** | Photo of equipment | Damage/hazard description | Vision Agent |
+| 4 | 🔧 **Maintenance Help** | Symptom description | Procedures + safety checks | Maintenance Agent |
+| 5 | ⚠️ **Safety Analysis** | Situation description | PPE + emergency procedures | Safety Agent |
+| 6 | 📊 **Sensor Analytics** | CSV sensor data | Anomaly detection + metrics | Analytics Agent |
+| 7 | 📝 **Report Generator** | Machine + date range | Professional report | Report Agent |
+| 8 | 🎤 **Voice Notes** | Audio recording | Transcribed text | Whisper Model |
+| 9 | 💻 **Code Execution** | Engineering task | Python script + results | Coding Agent |
+| 10 | 🛡️ **Security Monitor** | — (always active) | Live zero-egress dashboard | Security Agent |
+
+---
+
+## 🧠 AI Models — All Running Locally
 
 ```mermaid
 graph TB
-    USER["👤 User<br/>(Engineer / Operator)"]
+    OLLAMA["🖥️ Ollama Server<br/>localhost:11434<br/><i>Runs on YOUR computer</i>"]
 
-    subgraph FRONTEND["🖥️ Frontend (React + Vite)"]
-        UI["Web Dashboard<br/>localhost:5173"]
+    OLLAMA --> VIS["👁️ VISION<br/>qwen2.5vl:3b"]
+    OLLAMA --> REASON["🤔 REASONING<br/>qwen2.5vl:3b"]
+    OLLAMA --> CODE["💻 CODING<br/>qwen2.5vl:3b"]
+
+    HF["📦 Cached Locally<br/><i>Downloaded once, no internet needed after</i>"]
+
+    HF --> EMBED["📚 EMBEDDINGS<br/>all-MiniLM-L6-v2"]
+    HF --> SPEECH["🎤 SPEECH<br/>faster-whisper base"]
+
+    VIS --> VIS_USE["Reads images, scanned PDFs,<br/>gauges, labels, equipment photos"]
+    REASON --> REASON_USE["Answers questions, analyzes reports,<br/>checks SOP compliance"]
+    CODE --> CODE_USE["Writes & runs Python scripts<br/>for engineering calculations"]
+    EMBED --> EMBED_USE["Converts documents into vectors<br/>for meaning-based search"]
+    SPEECH --> SPEECH_USE["Converts spoken audio<br/>into written text"]
+
+    style OLLAMA fill:#1a1a2e,stroke:#e94560,color:#fff
+    style HF fill:#1a1a2e,stroke:#8957e5,color:#fff
+    style VIS fill:#1f6feb,stroke:#388bfd,color:#fff
+    style REASON fill:#e3b341,stroke:#d29922,color:#000
+    style CODE fill:#f78166,stroke:#ea6045,color:#fff
+    style EMBED fill:#8957e5,stroke:#a371f7,color:#fff
+    style SPEECH fill:#3fb950,stroke:#56d364,color:#000
+```
+
+| Model | Name | Task | Runtime | Size |
+|-------|------|------|---------|------|
+| 👁️ Vision | `qwen2.5vl:3b` | Image + PDF understanding | Ollama (localhost) | ~2 GB |
+| 🤔 Reasoning | `qwen2.5vl:3b` | Q&A, SOP checks, analysis | Ollama (localhost) | ~2 GB |
+| 💻 Coding | `qwen2.5vl:3b` | Python code generation | Ollama (localhost) | ~2 GB |
+| 📚 Embedding | `all-MiniLM-L6-v2` | Document similarity search | HuggingFace (cached) | ~80 MB |
+| 🎤 Speech | `faster-whisper (base)` | Voice → Text | CPU (local) | ~150 MB |
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TB
+    USER["👤 User"]
+
+    subgraph BROWSER["🖥️ Frontend — localhost:5173"]
+        UI["React + Vite Dashboard"]
     end
 
-    subgraph BACKEND["⚙️ Backend (Python FastAPI)"]
-        API["API Server<br/>localhost:8000"]
-        ROUTER["🔀 Smart Router<br/>Picks the right agent"]
+    subgraph SERVER["⚙️ Backend — localhost:8000"]
+        API["FastAPI Server"]
+        ROUTER["🔀 Smart Router"]
         
-        subgraph AGENTS["🤖 AI Agents"]
-            DOC["📄 Document Agent"]
-            KNOW["💬 Knowledge Assistant"]
-            CODE["💻 Coding Agent"]
-            MAINT["🔧 Maintenance Agent"]
-            SAFE["⚠️ Safety Agent"]
-            ANAL["📊 Analytics Agent"]
-            REPORT["📝 Report Agent"]
-            VIS["👁️ Vision Agent"]
+        subgraph AGENTS["🤖 8 AI Agents"]
+            A1["📄 Document"]
+            A2["💬 Knowledge"]
+            A3["👁️ Vision"]
+            A4["🔧 Maintenance"]
+            A5["⚠️ Safety"]
+            A6["📊 Analytics"]
+            A7["📝 Report"]
+            A8["💻 Coding"]
         end
         
-        subgraph STORAGE["💾 Local Storage"]
-            SQLITE["SQLite Database<br/>Documents, Reports, Audit Logs"]
-            CHROMA["ChromaDB<br/>Vector Search Engine"]
-            FILES["File System<br/>Uploaded PDFs & Images"]
+        subgraph DATA["💾 Local Storage"]
+            DB["SQLite DB"]
+            VECTOR["ChromaDB"]
+            FS["File System"]
         end
     end
 
-    subgraph AI["🧠 Local AI Runtime"]
-        OLLAMA["Ollama Server<br/>localhost:11434"]
-        QWEN["qwen2.5vl:3b Model"]
-        EMBED["all-MiniLM-L6-v2<br/>Embedding Model"]
+    subgraph AI["🧠 AI — localhost:11434"]
+        OLLAMA["Ollama"]
+        MODEL["qwen2.5vl:3b"]
+        EMB["MiniLM-L6-v2"]
     end
 
-    subgraph SECURITY["🛡️ Security Layer"]
-        MONITOR["Network Monitor<br/>Zero-Egress Enforcer"]
-        AUDIT["Audit Trail<br/>Every action is logged"]
-        SANDBOX["Coding Sandbox<br/>No network access"]
+    subgraph SEC["🛡️ Security"]
+        MON["Network Monitor"]
+        AUDIT["Audit Logger"]
+        SAND["Code Sandbox"]
     end
 
     USER --> UI
-    UI -->|"HTTP requests"| API
+    UI -->|HTTP| API
     API --> ROUTER
     ROUTER --> AGENTS
-    AGENTS -->|"AI queries"| OLLAMA
-    OLLAMA --> QWEN
-    AGENTS -->|"Search docs"| CHROMA
-    CHROMA --> EMBED
-    AGENTS --> SQLITE
-    AGENTS --> FILES
-    MONITOR -->|"Verifies isolation"| API
-    AUDIT -->|"Logs everything"| SQLITE
-    CODE -->|"Runs in"| SANDBOX
+    AGENTS -->|Inference| OLLAMA
+    OLLAMA --> MODEL
+    AGENTS -->|Search| VECTOR
+    VECTOR --> EMB
+    AGENTS -->|Store| DB
+    AGENTS -->|Files| FS
+    MON -->|Verify| SERVER
+    AUDIT --> DB
+    A8 -->|Isolated| SAND
 
-    style FRONTEND fill:#0d1117,stroke:#58a6ff,color:#fff
-    style BACKEND fill:#161b22,stroke:#f78166,color:#fff
+    style BROWSER fill:#0d1117,stroke:#58a6ff,color:#fff
+    style SERVER fill:#161b22,stroke:#f78166,color:#fff
     style AI fill:#1a1a2e,stroke:#e94560,color:#fff
-    style SECURITY fill:#0d1117,stroke:#3fb950,color:#fff
+    style SEC fill:#0d1117,stroke:#3fb950,color:#fff
 ```
 
 ---
 
-## 📄 Document Agent Flow — The Hero Demo
+## 📄 Flow 1: Document Agent (Hero Demo)
 
-> *This is the main showcase: Upload a scanned inspection report → Get a professional approval note document.*
+> Upload a scanned inspection report → Get a professional approval note
 
 ```mermaid
 graph TD
-    START["📤 Upload Inspection<br/>Report (PDF)"] --> OCR["📖 Step 1: Extract Text<br/>Read every page of the PDF"]
-    OCR --> RAG["🔍 Step 2: Search Knowledge Base<br/>Find matching SOPs & procedures"]
-    RAG --> REASON["🧠 Step 3: AI Reasoning<br/>Compare findings against safety rules<br/><i>Model: qwen2.5vl:3b</i>"]
-    REASON --> DOCGEN["📝 Step 4: Generate Document<br/>Create official Approval Note (.docx)"]
-    DOCGEN --> VERIFY["🛡️ Step 5: Security Check<br/>Verify zero data leaked"]
-    VERIFY --> DONE["✅ Done!<br/>Download the approval note"]
+    S1["📤 STEP 1<br/>Upload PDF Report"]
+    S2["📖 STEP 2<br/>Extract Text<br/><i>PyMuPDF reads every page</i>"]
+    S3["🔍 STEP 3<br/>Search Knowledge Base<br/><i>Model: all-MiniLM-L6-v2</i>"]
+    S4["🧠 STEP 4<br/>AI Reasoning<br/><i>Model: qwen2.5vl:3b</i><br/>Compare vs SOP rules"]
+    S5["📝 STEP 5<br/>Generate .docx<br/><i>Approval Note with findings</i>"]
+    S6["🛡️ STEP 6<br/>Security Verify<br/><i>Confirm zero data leaked</i>"]
+    S7["✅ STEP 7<br/>Download<br/><i>Official Approval Note</i>"]
 
-    style START fill:#238636,stroke:#2ea043,color:#fff
-    style OCR fill:#1f6feb,stroke:#388bfd,color:#fff
-    style RAG fill:#8957e5,stroke:#a371f7,color:#fff
-    style REASON fill:#e3b341,stroke:#d29922,color:#000
-    style DOCGEN fill:#f78166,stroke:#ea6045,color:#fff
-    style VERIFY fill:#3fb950,stroke:#56d364,color:#000
-    style DONE fill:#238636,stroke:#2ea043,color:#fff
+    S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7
+
+    style S1 fill:#238636,stroke:#2ea043,color:#fff
+    style S2 fill:#1f6feb,stroke:#388bfd,color:#fff
+    style S3 fill:#8957e5,stroke:#a371f7,color:#fff
+    style S4 fill:#e3b341,stroke:#d29922,color:#000
+    style S5 fill:#f78166,stroke:#ea6045,color:#fff
+    style S6 fill:#3fb950,stroke:#56d364,color:#000
+    style S7 fill:#238636,stroke:#2ea043,color:#fff
 ```
 
-**What happens at each step:**
-
-1. **Extract Text** — The system reads every page of the PDF using PyMuPDF (even scanned documents)
-2. **Search Knowledge Base** — Finds related SOPs and procedures using semantic search (understanding *meaning*, not just keywords)
-3. **AI Reasoning** — The local AI model (`qwen2.5vl:3b`) compares the inspection findings against the SOPs and identifies violations
-4. **Generate Document** — Creates a professional `.docx` Approval Note with findings, risk level, and recommended actions
-5. **Security Check** — The system verifies that no data left the local machine during the entire process
+| Step | What Happens | Model/Tool Used |
+|------|-------------|-----------------|
+| 1 | User uploads a PDF inspection report | — |
+| 2 | System reads every page and extracts all text | PyMuPDF |
+| 3 | Finds matching SOPs & safety procedures by *meaning* | all-MiniLM-L6-v2 + ChromaDB |
+| 4 | AI compares inspection findings vs SOP rules | qwen2.5vl:3b (Ollama) |
+| 5 | Generates a professional `.docx` Approval Note | python-docx |
+| 6 | Verifies no data left the local machine | Network Monitor (lsof) |
+| 7 | User downloads the finished document | — |
 
 ---
 
-## 💬 Knowledge Assistant Flow
+## 💬 Flow 2: Knowledge Assistant
+
+> Ask a question → Get an answer grounded in your documents (or a clear refusal)
 
 ```mermaid
-graph LR
-    Q["❓ User Asks a Question"] --> SEARCH["🔍 Search Local<br/>Knowledge Base<br/><i>Model: all-MiniLM-L6-v2</i>"]
-    SEARCH --> CHECK{"Sources<br/>Found?"}
-    CHECK -->|"Yes"| ANSWER["🧠 AI Generates Answer<br/>Grounded in local sources<br/><i>Model: qwen2.5vl:3b</i>"]
-    CHECK -->|"No"| REFUSE["🚫 Refuses to Answer<br/>'No supporting source found'<br/><i>Anti-Hallucination Policy</i>"]
+graph TD
+    Q["❓ User asks:<br/>'What is the vibration limit<br/>for pump P-102A?'"]
+    
+    SEARCH["🔍 Search uploaded documents<br/><i>Model: all-MiniLM-L6-v2</i>"]
+    
+    CHECK{"📋 Matching<br/>sources found?"}
+    
+    YES_PATH["🧠 AI generates answer<br/>citing exact sources<br/><i>Model: qwen2.5vl:3b</i>"]
+    
+    NO_PATH["🚫 AI REFUSES to answer<br/>'No supporting local source found'"]
+    
+    ANSWER["✅ Answer + Source Citations"]
+    SAFE["🛡️ Prevents dangerous<br/>made-up answers"]
+
+    Q --> SEARCH --> CHECK
+    CHECK -->|"Yes ✅"| YES_PATH --> ANSWER
+    CHECK -->|"No ❌"| NO_PATH --> SAFE
 
     style Q fill:#1f6feb,stroke:#388bfd,color:#fff
     style SEARCH fill:#8957e5,stroke:#a371f7,color:#fff
+    style CHECK fill:#e3b341,stroke:#d29922,color:#000
+    style YES_PATH fill:#238636,stroke:#2ea043,color:#fff
+    style NO_PATH fill:#da3633,stroke:#f85149,color:#fff
     style ANSWER fill:#238636,stroke:#2ea043,color:#fff
-    style REFUSE fill:#da3633,stroke:#f85149,color:#fff
+    style SAFE fill:#da3633,stroke:#f85149,color:#fff
 ```
 
-> **Anti-Hallucination Policy**: If the AI can't find the answer in your uploaded documents, it **refuses to guess**. It will clearly say *"No supporting local source found."* This prevents dangerous made-up answers in safety-critical environments.
+> ⚠️ **Anti-Hallucination Policy**: If the AI can't find the answer in your documents, it **refuses to guess**. Critical for safety-sensitive environments.
 
 ---
 
-## 💻 Coding Agent Flow
+## 👁️ Flow 3: Vision Analysis
+
+```mermaid
+graph LR
+    IMG["📸 Upload Equipment Photo"] --> ENCODE["🔄 Encode Image<br/><i>Base64</i>"]
+    ENCODE --> AI["🧠 Vision Model<br/><i>qwen2.5vl:3b</i>"]
+    AI --> OUT["📋 Analysis Output"]
+    
+    OUT --> D1["🔍 Visible components"]
+    OUT --> D2["⚠️ Abnormal conditions"]
+    OUT --> D3["🏷️ Legible labels"]
+    OUT --> D4["📝 Recommended inspections"]
+
+    style IMG fill:#1f6feb,stroke:#388bfd,color:#fff
+    style AI fill:#e3b341,stroke:#d29922,color:#000
+    style OUT fill:#238636,stroke:#2ea043,color:#fff
+```
+
+---
+
+## 💻 Flow 4: Coding Agent (Sandboxed)
 
 ```mermaid
 graph TD
-    TASK["📋 Engineering Task<br/>'Calculate pump degradation index'"] --> GEN["🧠 AI Generates Python Code<br/><i>Model: qwen2.5vl:3b</i>"]
-    GEN --> SANDBOX["🔒 Run in Sandbox<br/>No internet access<br/><i>--network none</i>"]
-    SANDBOX --> OUTPUT["📊 Results<br/>Printed to screen"]
+    TASK["📋 Task: 'Calculate pump<br/>degradation index'"]
+    GEN["🧠 AI generates Python code<br/><i>Model: qwen2.5vl:3b</i>"]
+    SANDBOX["🔒 Execute in Sandbox<br/><b>--network none</b><br/><i>Zero internet access</i>"]
+    RESULT["📊 Output: Results printed<br/>to screen + code shown"]
+
+    TASK --> GEN --> SANDBOX --> RESULT
 
     style TASK fill:#1f6feb,stroke:#388bfd,color:#fff
     style GEN fill:#e3b341,stroke:#d29922,color:#000
     style SANDBOX fill:#da3633,stroke:#f85149,color:#fff
-    style OUTPUT fill:#238636,stroke:#2ea043,color:#fff
+    style RESULT fill:#238636,stroke:#2ea043,color:#fff
 ```
 
-> The Coding Agent generates Python scripts and runs them in a **sandboxed environment with no network access** — so even if the AI-generated code tried to send data somewhere, it physically cannot.
+| Property | Value |
+|----------|-------|
+| **Network Access** | ❌ Completely blocked (`--network none`) |
+| **Can code leak data?** | ❌ Impossible — no socket access |
+| **Language** | Python |
+| **Output** | Printed to stdout, shown to user |
+
+---
+
+## 🔧 Flow 5: Maintenance / Safety / Failure Agents
+
+```mermaid
+graph LR
+    INPUT["📝 Describe Symptoms<br/><i>'Machine vibrating,<br/>temperature rising'</i>"]
+    
+    INPUT --> ROUTE{"🔀 Router"}
+    
+    ROUTE -->|"Mechanical issue"| MAINT["🔧 Maintenance Agent"]
+    ROUTE -->|"Safety concern"| SAFE["⚠️ Safety Agent"]
+    ROUTE -->|"Equipment failure"| FAIL["💥 Failure Agent"]
+    
+    MAINT --> M_OUT["Procedures + Checks"]
+    SAFE --> S_OUT["PPE + Emergency Steps"]
+    FAIL --> F_OUT["Root Cause + Fixes"]
+
+    M_OUT --> RAG["🔍 All answers backed<br/>by local documents"]
+    S_OUT --> RAG
+    F_OUT --> RAG
+
+    style INPUT fill:#1f6feb,stroke:#388bfd,color:#fff
+    style ROUTE fill:#e3b341,stroke:#d29922,color:#000
+    style MAINT fill:#f78166,stroke:#ea6045,color:#fff
+    style SAFE fill:#da3633,stroke:#f85149,color:#fff
+    style FAIL fill:#8957e5,stroke:#a371f7,color:#fff
+    style RAG fill:#238636,stroke:#2ea043,color:#fff
+```
+
+---
+
+## 📊 Flow 6: Sensor Analytics
+
+```mermaid
+graph TD
+    CSV["📊 Upload Sensor CSV<br/><i>temperature, vibration, pressure</i>"]
+    PARSE["🔄 Parse Readings"]
+    STORE["💾 Store in SQLite"]
+    CALC["🧮 Calculate Metrics"]
+    
+    CALC --> AVG["📈 Average Temperature"]
+    CALC --> VIB["📈 Average Vibration"]
+    CALC --> T_ANOM["🔴 Temperature Anomaly?<br/><i>above 80°C = alert</i>"]
+    CALC --> V_ANOM["🔴 Vibration Anomaly?<br/><i>above 6 mm/s = alert</i>"]
+
+    CSV --> PARSE --> STORE --> CALC
+
+    style CSV fill:#1f6feb,stroke:#388bfd,color:#fff
+    style CALC fill:#e3b341,stroke:#d29922,color:#000
+    style T_ANOM fill:#da3633,stroke:#f85149,color:#fff
+    style V_ANOM fill:#da3633,stroke:#f85149,color:#fff
+```
 
 ---
 
@@ -216,11 +350,12 @@ graph TD
 
 ```mermaid
 graph TB
-    subgraph BOUNDARY["🔒 Security Boundary (Your Computer)"]
-        APP["Application"]
-        OLLAMA["Ollama AI"]
-        DB["Database"]
-        FILES["Files"]
+    subgraph LOCAL["🔒 YOUR COMPUTER — Security Boundary"]
+        APP["⚙️ App Server"]
+        OLLAMA["🧠 Ollama AI"]
+        DB["💾 Database"]
+        FILES["📁 Files"]
+        SANDBOX["🔒 Code Sandbox"]
     end
 
     INTERNET["🌐 Internet"]
@@ -228,256 +363,255 @@ graph TB
     APP -.->|"❌ BLOCKED"| INTERNET
     OLLAMA -.->|"❌ BLOCKED"| INTERNET
     DB -.->|"❌ BLOCKED"| INTERNET
+    SANDBOX -.->|"❌ BLOCKED"| INTERNET
     
-    APP <-->|"✅ localhost only"| OLLAMA
+    APP <-->|"✅ 127.0.0.1"| OLLAMA
     APP <-->|"✅ local file"| DB
     APP <-->|"✅ local file"| FILES
 
-    MONITOR["🛡️ Network Monitor<br/>Scans open connections<br/>using lsof"]
-    MONITOR -->|"Verifies"| BOUNDARY
+    MONITOR["🛡️ Network Monitor<br/><i>Scans connections via lsof</i><br/><i>Flags non-localhost traffic</i>"]
+    MONITOR -->|"Continuously verifies"| LOCAL
 
-    style BOUNDARY fill:#0d1117,stroke:#3fb950,color:#fff
+    style LOCAL fill:#0d1117,stroke:#3fb950,color:#fff
     style INTERNET fill:#da3633,stroke:#f85149,color:#fff
     style MONITOR fill:#238636,stroke:#2ea043,color:#fff
 ```
 
-**Security features:**
-- ✅ All AI runs on `localhost:11434` (your computer only)
-- ✅ All data stored in local SQLite database and local files
-- ✅ Network monitor actively scans for unauthorized connections
-- ✅ Coding sandbox blocks all network access
-- ✅ Complete audit trail of every action
-- ❌ No calls to OpenAI, Google, or any cloud API
-- ❌ No telemetry or analytics sent anywhere
+| Security Feature | Status | How |
+|-----------------|--------|-----|
+| AI runs locally | ✅ | Ollama on `localhost:11434` |
+| Data stored locally | ✅ | SQLite + local files |
+| No cloud API calls | ✅ | No OpenAI/Google/Azure imports |
+| Network monitoring | ✅ | `lsof` scans active connections |
+| Code sandbox isolation | ✅ | `--network none` blocks all sockets |
+| Full audit trail | ✅ | Every action logged with timestamp |
+| External telemetry | ❌ Blocked | No analytics sent anywhere |
+
+---
+
+## 🤖 Agent Routing — How Tasks Get Assigned
+
+```mermaid
+graph TD
+    INPUT["📥 New Task Arrives"]
+    
+    ROUTER["🔀 Smart Router<br/><i>Analyzes input type + keywords</i>"]
+    
+    INPUT --> ROUTER
+    
+    ROUTER -->|"Has PDF/image<br/>or visual keywords"| VIS_MODEL["👁️ Vision Model<br/><b>qwen2.5vl:3b</b>"]
+    ROUTER -->|"Has code/calculate/<br/>script keywords"| CODE_MODEL["💻 Coding Model<br/><b>qwen2.5vl:3b</b>"]
+    ROUTER -->|"General question"| REASON_MODEL["🤔 Reasoning Model<br/><b>qwen2.5vl:3b</b>"]
+
+    VIS_MODEL --> DOC_FLOW["📄 Document Agent Flow"]
+    CODE_MODEL --> CODE_FLOW["💻 Coding Agent Flow"]
+    REASON_MODEL --> KNOW_FLOW["💬 Knowledge Flow"]
+
+    style INPUT fill:#1f6feb,stroke:#388bfd,color:#fff
+    style ROUTER fill:#e3b341,stroke:#d29922,color:#000
+    style VIS_MODEL fill:#8957e5,stroke:#a371f7,color:#fff
+    style CODE_MODEL fill:#f78166,stroke:#ea6045,color:#fff
+    style REASON_MODEL fill:#3fb950,stroke:#56d364,color:#000
+```
+
+| Input Signal | Detected By | Routes To |
+|-------------|------------|-----------|
+| PDF, PNG, JPG file attached | File extension check | 👁️ Vision → Document Agent |
+| Words: *inspection, scanned, diagram, gauge* | Regex pattern match | 👁️ Vision → Document Agent |
+| Words: *code, script, python, calculate, compute* | Regex pattern match | 💻 Coding Agent |
+| Everything else | Default fallback | 🤔 Knowledge Assistant |
 
 ---
 
 ## 📂 Project Structure
 
-```
-sih26117/
-│
-├── backend/                        ← Python server (the brain)
-│   ├── main.py                     ← Main API server (all endpoints)
-│   ├── requirements.txt            ← Python packages needed
-│   ├── .env.example                ← Configuration template
-│   │
-│   ├── app/
-│   │   ├── agent/
-│   │   │   ├── graph.py            ← Agent workflow engine (orchestrates everything)
-│   │   │   ├── router.py           ← Smart router (picks the right agent for each task)
-│   │   │   ├── prompts.py          ← System prompts for each agent
-│   │   │   └── state.py            ← Task state tracker
-│   │   │
-│   │   ├── api/
-│   │   │   ├── tasks.py            ← Task execution API endpoints
-│   │   │   └── security.py         ← Security status API endpoints
-│   │   │
-│   │   ├── models/
-│   │   │   ├── registry.py         ← Model registry (which model does what)
-│   │   │   └── local_client.py     ← Talks to Ollama (the local AI)
-│   │   │
-│   │   ├── sandbox/
-│   │   │   └── docker_runner.py    ← Isolated code execution environment
-│   │   │
-│   │   ├── security/
-│   │   │   └── network_check.py    ← Network isolation verifier
-│   │   │
-│   │   ├── schemas/
-│   │   │   ├── tasks.py            ← Data models for tasks
-│   │   │   └── events.py           ← Data models for events
-│   │   │
-│   │   └── tools/
-│   │       └── document_tools.py   ← Generates .docx approval notes
-│   │
-│   └── data/                       ← Local storage (database, uploads, artifacts)
-│
-├── frontend/                       ← Web dashboard (what you see in the browser)
-│   ├── src/
-│   │   ├── App.jsx                 ← Main dashboard UI
-│   │   ├── SovereignWorkbench.jsx  ← Advanced workbench UI with agent tracing
-│   │   ├── styles.css              ← All visual styling
-│   │   ├── main.jsx                ← App entry point
-│   │   └── lib/
-│   │       └── api.js              ← API connection helper
-│   │
-│   ├── index.html                  ← HTML entry point
-│   ├── package.json                ← JavaScript packages needed
-│   └── vite.config.js              ← Build configuration
-│
-└── README.md                       ← You are here! 👋
+```mermaid
+graph TD
+    ROOT["📁 DEMO-117/"]
+    
+    ROOT --> BE["📁 backend/"]
+    ROOT --> FE["📁 frontend/"]
+    ROOT --> README["📄 README.md"]
+
+    BE --> MAIN["📄 main.py<br/><i>API server — 559 lines</i>"]
+    BE --> REQ["📄 requirements.txt"]
+    BE --> ENV["📄 .env.example"]
+    BE --> APP["📁 app/"]
+
+    APP --> AGENT["📁 agent/<br/><i>graph, router, prompts, state</i>"]
+    APP --> APID["📁 api/<br/><i>tasks, security endpoints</i>"]
+    APP --> MODELS["📁 models/<br/><i>registry, local_client</i>"]
+    APP --> SBOX["📁 sandbox/<br/><i>docker_runner</i>"]
+    APP --> SECU["📁 security/<br/><i>network_check</i>"]
+    APP --> SCHEMA["📁 schemas/<br/><i>tasks, events</i>"]
+    APP --> TOOLS["📁 tools/<br/><i>document_tools</i>"]
+
+    FE --> SRC["📁 src/"]
+    SRC --> APPJSX["📄 App.jsx<br/><i>Main dashboard</i>"]
+    SRC --> SWJSX["📄 SovereignWorkbench.jsx<br/><i>Advanced workbench</i>"]
+    SRC --> CSS["📄 styles.css"]
+    SRC --> LIB["📁 lib/api.js"]
+
+    style ROOT fill:#0d1117,stroke:#58a6ff,color:#fff
+    style BE fill:#161b22,stroke:#f78166,color:#fff
+    style FE fill:#161b22,stroke:#58a6ff,color:#fff
+    style APP fill:#1a1a2e,stroke:#8957e5,color:#fff
 ```
 
 ---
 
-## 🚀 How to Set Up & Run (Step by Step)
+## 🧩 Tech Stack
 
-### Prerequisites (What You Need First)
+| Layer | Technology | Role |
+|-------|-----------|------|
+| 🖥️ **Frontend** | React + Vite | Dashboard UI |
+| ⚙️ **Backend** | Python FastAPI | API server |
+| 💾 **Database** | SQLite | Documents, reports, audit logs |
+| 🔍 **Vector DB** | ChromaDB | Semantic document search |
+| 📄 **PDF Reader** | PyMuPDF | Extract text from PDFs |
+| 📝 **Doc Writer** | python-docx | Generate .docx approval notes |
+| 🧠 **AI Runtime** | Ollama | Local model serving |
+| 👁️ **Main Model** | Qwen 2.5 VL (3B) | Vision + Language |
+| 📚 **Embeddings** | all-MiniLM-L6-v2 | Document search |
+| 🎤 **Speech** | faster-whisper | Voice-to-text |
 
-| Tool | Why You Need It | How to Get It |
-|------|----------------|---------------|
-| **Python 3.10+** | Runs the backend server | [python.org](https://www.python.org/downloads/) |
-| **Node.js 18+** | Runs the frontend dashboard | [nodejs.org](https://nodejs.org/) |
-| **Ollama** | Runs AI models locally on your computer | [ollama.com](https://ollama.com/) |
-| **Git** | Downloads this project | [git-scm.com](https://git-scm.com/) |
+---
 
-### Step 1: Clone the Project
+## 🚀 Setup — 4 Steps
+
+### Step 1: Clone
 
 ```bash
 git clone https://github.com/i-shubhh/DEMO-117.git
 cd DEMO-117
 ```
 
-### Step 2: Install & Start Ollama (The Local AI)
+### Step 2: Start Local AI
 
 ```bash
-# Install Ollama (macOS)
-brew install ollama
-
-# OR download from https://ollama.com for Windows/Linux
-
-# Start the Ollama server
+# Install Ollama → https://ollama.com
 ollama serve
-
-# Download the AI model (only needed once, ~2GB)
-ollama pull qwen2.5vl:3b
+ollama pull qwen2.5vl:3b       # ~2GB download, only once
 ```
 
-### Step 3: Set Up the Backend
+### Step 3: Start Backend
 
 ```bash
 cd backend
-
-# Create a virtual environment
 python3 -m venv venv
-source venv/bin/activate    # On Windows: venv\Scripts\activate
-
-# Install dependencies
+source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-# Copy the configuration file
 cp .env.example .env
-
-# Start the backend server
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-✅ Backend is now running at **http://localhost:8000**
-
-### Step 4: Set Up the Frontend
+### Step 4: Start Frontend
 
 ```bash
-# Open a NEW terminal window
-cd frontend
-
-# Install dependencies
+cd frontend                     # new terminal
 npm install
-
-# Start the frontend
 npm run dev
 ```
 
-✅ Frontend is now running at **http://localhost:5173**
-
-### Step 5: Open in Your Browser
-
-Go to **http://localhost:5173** — You should see the Sovereign AI Workbench dashboard! 🎉
+> 🎉 Open **http://localhost:5173** in your browser!
 
 ---
 
 ## ⚙️ Configuration
 
-All settings are in `backend/.env`:
-
-```env
-OLLAMA_URL=http://localhost:11434/api/generate    # Where Ollama is running
-OLLAMA_MODEL=qwen2.5vl:3b                        # Which AI model to use
-SOVEREIGN_DATA_DIR=./data                         # Where to store files
-WHISPER_MODEL=base                                # Speech-to-text model size
-```
+| Variable | Default | What It Does |
+|----------|---------|-------------|
+| `OLLAMA_URL` | `http://localhost:11434/api/generate` | Where the AI model runs |
+| `OLLAMA_MODEL` | `qwen2.5vl:3b` | Which AI model to use |
+| `SOVEREIGN_DATA_DIR` | `./data` | Where files are stored |
+| `WHISPER_MODEL` | `base` | Speech-to-text model size |
+| `CORS_ORIGINS` | `http://localhost:5173,...` | Allowed frontend URLs |
 
 ---
 
-## 🔌 API Endpoints (For Developers)
+## 🔌 API Endpoints
 
-| Endpoint | Method | What It Does |
+### Core APIs
+
+| Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/` | GET | Check if the server is running |
-| `/health` | GET | Full system health check |
-| `/system/status` | GET | Detailed system status with AI model info |
-| `/chat` | POST | Ask questions to the Knowledge Assistant |
-| `/documents/upload` | POST | Upload & index a document (PDF, TXT, DOCX, CSV) |
-| `/documents` | GET | List all uploaded documents |
-| `/vision/analyze` | POST | Analyze an uploaded image |
-| `/maintenance/analyze` | POST | Get maintenance recommendations |
-| `/safety/analyze` | POST | Get safety analysis & PPE recommendations |
-| `/failure/analyze` | POST | Root cause failure analysis |
-| `/analytics/analyze` | POST | Analyze sensor data for anomalies |
-| `/reports/generate` | POST | Generate a professional report |
-| `/reports` | GET | List all generated reports |
-| `/voice-to-text` | POST | Convert audio to text |
-| `/generate-flowchart` | POST | Generate a troubleshooting flowchart |
-| `/agents` | GET | List all available AI agents |
-| `/audit-logs` | GET | View the complete audit trail |
-| `/api/tasks` | POST | Start an advanced agentic task workflow |
+| `/` | GET | Server status check |
+| `/health` | GET | Full system health |
+| `/system/status` | GET | AI model + storage status |
+| `/agents` | GET | List all 8 AI agents |
+| `/audit-logs` | GET | Complete audit trail |
+
+### Document & Knowledge APIs
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/documents/upload` | POST | Upload & index a document |
+| `/documents` | GET | List all documents |
+| `/documents/{id}` | GET | Get document details |
+| `/documents/{id}/file` | GET | Download original file |
+| `/chat` | POST | Ask the Knowledge Assistant |
+| `/knowledge` | GET | Knowledge base stats |
+
+### Analysis APIs
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/vision/analyze` | POST | Analyze equipment photo |
+| `/maintenance/analyze` | POST | Maintenance recommendations |
+| `/safety/analyze` | POST | Safety & PPE analysis |
+| `/failure/analyze` | POST | Root cause analysis |
+| `/analytics/analyze` | POST | Sensor anomaly detection |
+
+### Report & Advanced APIs
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/reports/generate` | POST | Generate professional report |
+| `/reports` | GET | List all reports |
+| `/voice-to-text` | POST | Speech → text |
+| `/generate-flowchart` | POST | AI troubleshooting flowchart |
+| `/api/tasks` | POST | Start agentic task workflow |
 | `/api/tasks/{id}` | GET | Check task progress |
-| `/api/tasks/{id}/result` | GET | Get task results and artifacts |
-| `/api/tasks/{id}/events` | GET | Get real-time execution trace |
-| `/api/security/status` | GET | Verify zero-egress security status |
+| `/api/tasks/{id}/result` | GET | Get results + artifacts |
+| `/api/tasks/{id}/events` | GET | Real-time execution trace |
+| `/api/security/status` | GET | Zero-egress verification |
 
 ---
 
-## 🧩 Technology Stack
+## 🔄 Complete Data Flow — End to End
 
 ```mermaid
-graph LR
-    subgraph Frontend
-        REACT["React"]
-        VITE["Vite"]
-        CSS["CSS"]
-    end
-    
-    subgraph Backend
-        FASTAPI["FastAPI"]
-        SQLITE["SQLite"]
-        CHROMADB["ChromaDB"]
-        PYMUPDF["PyMuPDF"]
-    end
-    
-    subgraph AI_Runtime["AI Runtime"]
-        OLLAMA["Ollama"]
-        QWEN["Qwen 2.5 VL"]
-        MINILM["MiniLM-L6"]
-        WHISPER["Whisper"]
-    end
+sequenceDiagram
+    actor User
+    participant Frontend as 🖥️ Frontend
+    participant API as ⚙️ FastAPI
+    participant Router as 🔀 Router
+    participant Agent as 🤖 Agent
+    participant Ollama as 🧠 Ollama
+    participant ChromaDB as 🔍 ChromaDB
+    participant SQLite as 💾 SQLite
+    participant Security as 🛡️ Security
 
-    style Frontend fill:#61dafb,stroke:#21a1c4,color:#000
-    style Backend fill:#009688,stroke:#00796b,color:#fff
-    style AI_Runtime fill:#e94560,stroke:#c81d35,color:#fff
+    User->>Frontend: Upload PDF + Click "Analyze"
+    Frontend->>API: POST /api/tasks
+    API->>Router: Classify task type
+    Router->>Agent: Route to Document Agent
+    Agent->>Agent: Extract text (PyMuPDF)
+    Agent->>ChromaDB: Search for matching SOPs
+    ChromaDB-->>Agent: Return relevant sources
+    Agent->>Ollama: Send prompt + context
+    Ollama-->>Agent: Return analysis
+    Agent->>Agent: Generate .docx Approval Note
+    Agent->>Security: Verify zero-egress
+    Security-->>Agent: ✅ VERIFIED
+    Agent->>SQLite: Log audit trail
+    Agent-->>API: Return result + artifacts
+    API-->>Frontend: Task completed
+    Frontend-->>User: Show results + download link
 ```
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | React + Vite | User interface (dashboard) |
-| **Backend** | Python FastAPI | API server, business logic |
-| **Database** | SQLite | Documents, reports, audit logs |
-| **Vector DB** | ChromaDB | Semantic document search |
-| **PDF Reader** | PyMuPDF | Extract text from PDFs |
-| **Doc Writer** | python-docx | Generate .docx reports |
-| **AI Runtime** | Ollama | Local model serving |
-| **Main AI Model** | Qwen 2.5 VL (3B) | Vision + Language understanding |
-| **Embeddings** | all-MiniLM-L6-v2 | Document similarity search |
-| **Speech** | faster-whisper | Voice-to-text conversion |
-
----
-
-## 🤝 Team & Credits
-
-**Problem Statement**: PS-26117, Smart India Hackathon 2026
 
 ---
 
 ## 📜 License
 
-This project is built for SIH 2026. All rights reserved.
-]]>
+Built for **Smart India Hackathon 2026** — Problem Statement PS-26117.

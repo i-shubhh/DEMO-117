@@ -40,4 +40,11 @@ export const api = {
   agents: () => request('/agents'),
   audit: () => request('/audit-logs'),
   knowledge: () => request('/knowledge'),
+  createTask: (data) => form('/api/tasks', data, { timeout: 180000 }),
+  taskStatus: (id) => request(`/api/tasks/${id}`),
+  taskEvents: (id) => request(`/api/tasks/${id}/events`),
+  taskResult: (id) => request(`/api/tasks/${id}/result`),
+  securityStatus: () => request('/api/security/status'),
+  sampleReportUrl: `${API_URL}/api/demo/sample-report`,
 }
+

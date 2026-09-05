@@ -151,7 +151,7 @@ def get_vector_store():
         return _vector_store
     try:
         if _embedding_model is None:
-            _embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+            _embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2", model_kwargs={"local_files_only": True})
         if CHROMA_DIR.exists():
             _vector_store = Chroma(persist_directory=str(CHROMA_DIR), embedding_function=_embedding_model)
     except Exception:
@@ -167,7 +167,7 @@ def index_document(document_id, text, name):
     if store is None and Chroma is not None and HuggingFaceEmbeddings is not None:
         try:
             if _embedding_model is None:
-                _embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+                _embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2", model_kwargs={"local_files_only": True})
             metadatas = [{"document_id": document_id, "source": name, "chunk": i + 1} for i in range(len(chunks))]
             _vector_store = Chroma.from_texts(chunks, embedding=_embedding_model, metadatas=metadatas, persist_directory=str(CHROMA_DIR))
         except Exception:
@@ -530,3 +530,29 @@ def ask_pdf(request: ChatRequest):
 @app.post("/analyze-image")
 async def analyze_image(file: UploadFile = File(...)):
     return await vision_analyze(file)
+
+
+# --- Sovereign AI Workbench Master Plan API Routers (Section 7) ---
+from app.api.tasks import tasks_router, init_workflow_engine
+from app.api.security import security_router
+
+# Initialize the workflow engine with local knowledge retrieval
+init_workflow_engine(retrieve_fn=retrieve)
+
+# Include master plan routers
+app.include_router(tasks_router)
+app.include_router(security_router)
+
+
+@app.get("/api/demo/sample-report")
+def get_sample_report():
+    """Serves sample inspection report PDF for instant demo testing."""
+    sample_path = BASE_DIR / "data" / "demo" / "inspection_report_P102A.pdf"
+    if not sample_path.exists():
+        raise HTTPException(status_code=404, detail="Sample report not found.")
+    return FileResponse(
+        path=str(sample_path),
+        filename="inspection_report_P102A.pdf",
+        media_type="application/pdf",
+    )
+

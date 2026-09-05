@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from './lib/api.js'
+import { SovereignWorkbench } from './SovereignWorkbench.jsx'
 
 const nav = [
-  ['dashboard', 'Overview', '⌂'], ['workspace', 'AI Workspace', '✦'], ['documents', 'Documents', '▤'], ['vision', 'Vision Analysis', '◉'], ['maintenance', 'Maintenance', '⌁'], ['failure', 'Failure Analysis', '⌁'], ['safety', 'Safety', '△'], ['knowledge', 'Knowledge Base', '▥'], ['analytics', 'Analytics', '▥'], ['agents', 'Agent Center', '⌘'], ['reports', 'Reports', '▧'], ['security', 'Security Center', '◈'], ['audit', 'Audit Logs', '≡'], ['settings', 'Settings', '⚙'],
+  ['workbench', 'Hero Workbench', '✦'],
+  ['dashboard', 'Overview', '⌂'], ['workspace', 'AI Workspace', '◈'], ['documents', 'Documents', '▤'], ['vision', 'Vision Analysis', '◉'], ['maintenance', 'Maintenance', '⌁'], ['failure', 'Failure Analysis', '⌁'], ['safety', 'Safety', '△'], ['knowledge', 'Knowledge Base', '▥'], ['analytics', 'Analytics', '▥'], ['agents', 'Agent Center', '⌘'], ['reports', 'Reports', '▧'], ['security', 'Security Center', '◈'], ['audit', 'Audit Logs', '≡'], ['settings', 'Settings', '⚙'],
 ]
+
 
 const fallbackStatus = { local_ai: { online: false, model: 'qwen2.5vl:3b' }, ollama: { online: false }, rag: { online: true, documents: 0, chunks: 0 }, vector_db: { online: true }, external_api: { status: 'blocked' }, network_egress: { status: 'blocked' }, audit: { status: 'active' }, air_gapped: { status: 'capable' } }
 const demoMachines = [{ id: 'M-101', state: 'Healthy', health: 94, temp: 68, vibration: 3.1, pressure: 5.4 }, { id: 'M-102', state: 'Attention', health: 71, temp: 82, vibration: 7.2, pressure: 5.1 }, { id: 'M-103', state: 'Healthy', health: 89, temp: 72, vibration: 4.2, pressure: 5.3 }]
@@ -11,13 +14,14 @@ const agentsFallback = ['Supervisor Agent', 'Document Agent', 'Vision Agent', 'M
 
 function App() {
   const [authenticated, setAuthenticated] = useState(() => localStorage.getItem('sovereign-auth') === 'true')
-  const [page, setPage] = useState(() => window.location.hash.slice(1) || 'dashboard')
+  const [page, setPage] = useState(() => window.location.hash.slice(1) || 'workbench')
   const [mobileNav, setMobileNav] = useState(false)
   const [securityOpen, setSecurityOpen] = useState(false)
   const [status, setStatus] = useState(fallbackStatus)
   const [documents, setDocuments] = useState([])
   const [agents, setAgents] = useState(agentsFallback)
   const [toasts, setToasts] = useState([])
+
 
   const notify = (message, type = 'info') => { const id = Date.now(); setToasts(items => [...items, { id, message, type }]); setTimeout(() => setToasts(items => items.filter(item => item.id !== id)), 4200) }
   const go = (next) => { setPage(next); window.location.hash = next; setMobileNav(false) }
@@ -47,7 +51,8 @@ function Header({ page, onMenu, onSecurity, status }) { const label = nav.find(i
 function BottomBar({ status }) { return <div className="bottom-bar"><span><i className="dot green" />LOCAL AI <b>{status.local_ai?.online ? 'ONLINE' : 'OFFLINE'}</b></span><span><i className="dot cyan" />AIR-GAPPED CAPABLE</span><span><i className="dot red" />CLOUD INFERENCE OFF</span><span><i className="dot green" />AUDIT ACTIVE</span><strong>Data stays on-premise <b>↗</b></strong></div> }
 function SecurityPanel({ status, close }) { const rows = [['Air-gapped mode', 'CAPABLE', 'green'], ['Local inference', status.local_ai?.online ? 'ONLINE' : 'STANDBY', status.local_ai?.online ? 'green' : 'amber'], ['External API access', 'BLOCKED', 'red'], ['Cloud inference', 'DISABLED', 'red'], ['Data egress', 'BLOCKED', 'red'], ['Telemetry', 'DISABLED', 'red'], ['Local vector database', 'ONLINE', 'green'], ['Local storage', 'ONLINE', 'green']]; return <div className="panel-overlay" onClick={close}><section className="security-panel" onClick={event => event.stopPropagation()}><div className="panel-title"><div><p className="eyebrow">VERIFIABLE CONTROLS</p><h2>Security status</h2></div><button className="close-btn" onClick={close}>×</button></div><div className="security-hero"><div className="shield">◈</div><div><strong>ZERO EXTERNAL DATA EGRESS</strong><p>Application AI calls remain within configured local infrastructure.</p></div></div>{rows.map(row => <div className="security-row" key={row[0]}><span>{row[0]}</span><b className={`text-${row[2]}`}><i className={`dot ${row[2]}`} />{row[1]}</b></div>)}<p className="panel-note">Air-gapped capability depends on network controls enforced by your organization. This application does not claim to prove physical isolation.</p></section></div> }
 
-function Page({ page, ...props }) { const pages = { dashboard: Dashboard, workspace: Workspace, documents: Documents, vision: Vision, maintenance: Maintenance, failure: Failure, safety: Safety, knowledge: Knowledge, analytics: Analytics, agents: Agents, reports: Reports, security: Security, audit: Audit, settings: Settings }; const Component = pages[page] || Dashboard; return <Component {...props} /> }
+function Page({ page, ...props }) { const pages = { workbench: SovereignWorkbench, dashboard: Dashboard, workspace: Workspace, documents: Documents, vision: Vision, maintenance: Maintenance, failure: Failure, safety: Safety, knowledge: Knowledge, analytics: Analytics, agents: Agents, reports: Reports, security: Security, audit: Audit, settings: Settings }; const Component = pages[page] || SovereignWorkbench; return <Component {...props} /> }
+
 function PageHeader({ kicker, title, description, action }) { return <div className="page-header"><div><p className="eyebrow">{kicker}</p><h1>{title}</h1>{description && <p className="lead muted">{description}</p>}</div>{action}</div> }
 function Dot({ color = 'green' }) { return <span className={`dot ${color}`} /> }
 function Status({ children, color = 'green' }) { return <span className={`status status-${color}`}><Dot color={color} />{children}</span> }

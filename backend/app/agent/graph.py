@@ -1,7 +1,16 @@
-"""Agent Graph execution engine per Section 11 of master plan."""
+"""Agent Graph execution engine per PROJECT_GUIDE.md Section 11.
+
+Per-stage model selection (P0.5 contract):
+  _run_document_flow  → vision model  (OCR stage) + reasoning model (synthesis)
+  _run_knowledge_flow → reasoning model
+  _run_coding_flow    → coding model
+
+Each local_client.generate() call receives the model name and endpoint
+explicitly from the registry.  state.selected_model reflects the PRIMARY
+(entry-point) model for event/audit metadata only.
+"""
 
 import base64
-import json
 import logging
 import re
 import time
@@ -13,6 +22,7 @@ from app.agent.prompts import CODING_AGENT_PROMPT, DOCUMENT_AGENT_PROMPT, KNOWLE
 from app.agent.router import router
 from app.agent.state import TaskState
 from app.models.local_client import local_client
+from app.models.registry import registry
 from app.sandbox.docker_runner import sandbox
 from app.schemas.tasks import Artifact, Citation
 from app.security.network_check import security_monitor
@@ -47,6 +57,8 @@ class AgentWorkflowEngine:
         )
         state.task_type = task_type
         state.selected_model = selected_model
+        # Store required_capabilities pipeline on state for graph stages to use.
+        state.required_capabilities = routing_info.get("required_capabilities", [task_type])
 
         # Step 2: route_model
         state.add_event(
@@ -56,9 +68,14 @@ class AgentWorkflowEngine:
             model=selected_model,
             details={
                 "task_type": task_type,
-                "selected_model": selected_model,
+                "primary_model": selected_model,
+                "required_capabilities": state.required_capabilities,
                 "reasoning": routing_info["reason"],
                 "capability": routing_info["capability"],
+                "model_configs": {
+                    cap: cfg["model"]
+                    for cap, cfg in routing_info.get("model_configs", {}).items()
+                },
             },
         )
 
@@ -106,7 +123,26 @@ class AgentWorkflowEngine:
         return state
 
     def _run_document_flow(self, state: TaskState):
-        """Document flow: OCR/vision -> retrieve -> reason -> docgen -> verify."""
+        """Document flow: OCR/vision → retrieve → reason → docgen → verify.
+
+        Per P0.5 model-selection contract:
+          - OCR / scanned-page stage  → VISION model
+          - SOP reasoning stage        → REASONING model
+        Each stage resolves its model explicitly from the registry.
+        """
+        # Resolve per-stage models from registry (P0.5).
+        vision_cfg = registry.get_model_for_capability("vision")
+        reasoning_cfg = registry.get_model_for_capability("reasoning")
+        vision_model = vision_cfg["model"]
+        vision_endpoint = vision_cfg["endpoint"]
+        reasoning_model = reasoning_cfg["model"]
+        reasoning_endpoint = reasoning_cfg["endpoint"]
+
+        logger.info(
+            "Document flow model selection — vision=%s | reasoning=%s",
+            vision_model, reasoning_model,
+        )
+
         # 1. OCR / Vision extraction
         state.add_event(
             event_type="ocr_started",
@@ -205,11 +241,12 @@ class AgentWorkflowEngine:
                         finally:
                             pix = None  # Free pixmap memory immediately
 
-                        # Pass rendered image to existing LocalModelClient
+                        # Pass rendered image to LocalModelClient using VISION model explicitly.
                         try:
                             vision_text = local_client.generate(
                                 prompt=vision_page_prompt,
-                                model=state.selected_model,
+                                model=vision_model,       # P0.5: explicit vision model
+                                endpoint=vision_endpoint, # P0.5: explicit endpoint
                                 images=[b64_image],
                                 temperature=0.1,
                             )
@@ -222,8 +259,8 @@ class AgentWorkflowEngine:
                                 event_type="ocr_completed",
                                 step="document_text_extraction",
                                 status="completed",
-                                model=state.selected_model,
-                                details={"file": filename, "page": page_num, "chars_extracted": len(vision_text)},
+                                model=vision_model,  # report the actual model used
+                                details={"file": filename, "page": page_num, "chars_extracted": len(vision_text), "model_used": vision_model},
                             )
                         except Exception as vision_err:
                             logger.error(f"Vision inference failed for page {page_num} in '{filename}': {vision_err}")
@@ -275,13 +312,17 @@ class AgentWorkflowEngine:
             details={"sources_found": [s.get("source") for s in retrieved_sources]},
         )
 
-        # 3. Model Reasoning Step
+        # 3. Model Reasoning Step — uses REASONING model explicitly (P0.5).
         state.add_event(
             event_type="model_started",
             step="industrial_reasoning",
             status="started",
-            model=state.selected_model,
-            details={"context_length": len(extracted_text) + sum(len(s.get("text", "")) for s in retrieved_sources)},
+            model=reasoning_model,  # report the actual reasoning model
+            details={
+                "context_length": len(extracted_text) + sum(len(s.get("text", "")) for s in retrieved_sources),
+                "model_used": reasoning_model,
+                "vision_model_used": vision_model,
+            },
         )
 
         rag_text = "\n\n".join(f"[{s.get('source')}]: {s.get('text')}" for s in retrieved_sources)
@@ -293,7 +334,13 @@ class AgentWorkflowEngine:
         )
 
         try:
-            analysis = local_client.generate(prompt=prompt, model=state.selected_model, temperature=0.15)
+            # Use REASONING model — not the vision model — for SOP synthesis.
+            analysis = local_client.generate(
+                prompt=prompt,
+                model=reasoning_model,       # P0.5: explicit reasoning model
+                endpoint=reasoning_endpoint, # P0.5: explicit endpoint
+                temperature=0.15,
+            )
         except Exception as err:
             logger.error(f"Industrial reasoning model inference failed: {err}")
             raise RuntimeError(f"Industrial reasoning model inference failed: {err}") from err
@@ -344,7 +391,16 @@ class AgentWorkflowEngine:
         )
 
     def _run_knowledge_flow(self, state: TaskState):
-        """Knowledge Assistant flow: retrieve -> reason -> verify."""
+        """Knowledge Assistant flow: retrieve → reason → verify.
+
+        Uses REASONING model explicitly (P0.5).
+        """
+        # Resolve reasoning model from registry.
+        reasoning_cfg = registry.get_model_for_capability("reasoning")
+        reasoning_model = reasoning_cfg["model"]
+        reasoning_endpoint = reasoning_cfg["endpoint"]
+
+        logger.info("Knowledge flow model selection — reasoning=%s", reasoning_model)
         state.add_event(
             event_type="rag_search",
             step="confidential_knowledge_search",
@@ -378,7 +434,8 @@ class AgentWorkflowEngine:
             event_type="model_started",
             step="grounded_reasoning",
             status="started",
-            model=state.selected_model,
+            model=reasoning_model,  # report the actual model
+            details={"model_used": reasoning_model},
         )
 
         if not sources:
@@ -391,18 +448,34 @@ class AgentWorkflowEngine:
                 f"QUESTION: {state.user_request}"
             )
             try:
-                state.answer = local_client.generate(prompt=prompt, model=state.selected_model, temperature=0.1)
+                # Use REASONING model explicitly (P0.5).
+                state.answer = local_client.generate(
+                    prompt=prompt,
+                    model=reasoning_model,
+                    endpoint=reasoning_endpoint,
+                    temperature=0.1,
+                )
             except Exception:
                 state.answer = f"Based on local documentation ({', '.join(set(s.get('source', '') for s in sources))}):\n\n" + sources[0].get("text", "")[:600]
 
     def _run_coding_flow(self, state: TaskState):
-        """Coding flow: coding_model -> sandbox execution (--network none) -> verify."""
+        """Coding flow: coding_model → sandbox execution (--network none) → verify.
+
+        Uses CODING model explicitly (P0.5).
+        """
+        # Resolve coding model from registry.
+        coding_cfg = registry.get_model_for_capability("coding")
+        coding_model = coding_cfg["model"]
+        coding_endpoint = coding_cfg["endpoint"]
+
+        logger.info("Coding flow model selection — coding=%s", coding_model)
+
         state.add_event(
             event_type="model_started",
             step="code_generation",
             status="started",
-            model=state.selected_model,
-            details={"capability": "sandboxed_code_generation"},
+            model=coding_model,  # report the actual coding model
+            details={"capability": "sandboxed_code_generation", "model_used": coding_model},
         )
 
         # Generate code or formulate engineering calculation
@@ -413,7 +486,13 @@ class AgentWorkflowEngine:
 
         generated_code = ""
         try:
-            raw_response = local_client.generate(prompt=prompt, model=state.selected_model, temperature=0.1)
+            # Use CODING model explicitly (P0.5).
+            raw_response = local_client.generate(
+                prompt=prompt,
+                model=coding_model,
+                endpoint=coding_endpoint,
+                temperature=0.1,
+            )
             match = re.search(r"```(?:python)?\s*(.*?)\s*```", raw_response, re.DOTALL)
             generated_code = match.group(1) if match else raw_response
         except Exception:

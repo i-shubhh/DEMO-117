@@ -44,7 +44,15 @@ DB_PATH = DATA_DIR / "workbench.db"
 CHROMA_DIR = Path(os.getenv("SOVEREIGN_CHROMA_DIR", BASE_DIR / "chroma_db"))
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 OLLAMA_TAGS_URL = os.getenv("OLLAMA_TAGS_URL", "http://localhost:11434/api/tags")
+# Generic fallback model — used by legacy /chat and /maintenance endpoints only.
+# Per-capability models are resolved from the registry in the agent workflow.
 MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5vl:3b")
+
+# Import the model registry so health endpoints can report per-capability models.
+try:
+    from app.models.registry import registry as model_registry
+except Exception:
+    model_registry = None
 
 DATA_DIR.mkdir(exist_ok=True)
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -117,6 +125,7 @@ def row_dict(row):
 
 
 def local_model_status():
+    """Check Ollama runtime health and single-model availability (legacy helper)."""
     try:
         response = requests.get(OLLAMA_TAGS_URL, timeout=2)
         response.raise_for_status()
@@ -125,6 +134,54 @@ def local_model_status():
         return {"online": True, "model_available": available, "model": MODEL, "url": OLLAMA_URL}
     except requests.RequestException as error:
         return {"online": False, "model_available": False, "model": MODEL, "url": OLLAMA_URL, "error": str(error)}
+
+
+def multi_model_status():
+    """
+    Check availability of all three registered capability models against the
+    local Ollama /api/tags endpoint.
+
+    Returns a dict with:
+      - ollama_online: bool
+      - models: {capability: {model, available, endpoint}}
+      - models_differentiated: bool (False means all three resolve to same model)
+    """
+    ollama_online = False
+    installed_names = set()
+    try:
+        response = requests.get(OLLAMA_TAGS_URL, timeout=2)
+        response.raise_for_status()
+        tags = response.json().get("models", [])
+        installed_names = {
+            item.get("name", "") for item in tags
+        } | {
+            item.get("model", "") for item in tags
+        }
+        ollama_online = True
+    except requests.RequestException:
+        pass
+
+    capability_status = {}
+    if model_registry:
+        for cap, cfg in model_registry.get_all_configs().items():
+            model_name = cfg["model"]
+            capability_status[cap] = {
+                "model": model_name,
+                "available": model_name in installed_names if ollama_online else None,
+                "endpoint": cfg["endpoint"],
+                "runtime": cfg.get("runtime", "ollama"),
+                "description": cfg.get("description", ""),
+            }
+        models_differentiated = model_registry.are_models_differentiated()
+    else:
+        capability_status = {"error": "Registry not loaded"}
+        models_differentiated = False
+
+    return {
+        "ollama_online": ollama_online,
+        "models": capability_status,
+        "models_differentiated": models_differentiated,
+    }
 
 
 def call_ollama(prompt, images=None, temperature=0.2, json_format=False, max_tokens=None):
@@ -267,19 +324,50 @@ def root():
 
 @app.get("/health")
 def health():
-    ollama = local_model_status()
+    """Health check per PROJECT_GUIDE.md Section 23.
+
+    Reports: API status, Ollama runtime, per-capability model availability,
+    knowledge base, and storage type.  All inference must be LOCAL.
+    """
+    multi_status = multi_model_status()
     with db() as connection:
         count = connection.execute("SELECT COUNT(*) FROM documents WHERE status='indexed'").fetchone()[0]
-    return {"status": "ok", "local_ai": ollama, "knowledge_base": {"online": True, "indexed_documents": count}, "storage": "local"}
+    return {
+        "status": "ok",
+        "local_ai": {
+            "online": multi_status["ollama_online"],
+            "url": OLLAMA_URL,
+            "models_differentiated": multi_status["models_differentiated"],
+            "capabilities": multi_status["models"],
+        },
+        "knowledge_base": {"online": True, "indexed_documents": count},
+        "storage": "local",
+        "external_api": "blocked",
+    }
 
 
 @app.get("/system/status")
 def system_status():
+    """Extended system status with full multi-model registry information."""
+    multi_status = multi_model_status()
     ollama = local_model_status()
     with db() as connection:
         documents = connection.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
         chunks = connection.execute("SELECT COALESCE(SUM(chunks), 0) FROM documents").fetchone()[0]
-    return {"local_ai": ollama, "ollama": ollama, "rag": {"online": True, "documents": documents, "chunks": chunks}, "vector_db": {"online": True, "type": "Chroma / lexical fallback"}, "external_api": {"status": "blocked"}, "network_egress": {"status": "blocked"}, "audit": {"status": "active"}, "air_gapped": {"status": "capable", "note": "Application does not call external AI services."}}
+    return {
+        "local_ai": ollama,
+        "ollama": ollama,
+        "multi_model": multi_status,
+        "rag": {"online": True, "documents": documents, "chunks": chunks},
+        "vector_db": {"online": True, "type": "Chroma / lexical fallback"},
+        "external_api": {"status": "blocked"},
+        "network_egress": {"status": "blocked"},
+        "audit": {"status": "active"},
+        "air_gapped": {
+            "status": "capable",
+            "note": "Application does not call external AI services.",
+        },
+    }
 
 
 @app.post("/documents/upload")

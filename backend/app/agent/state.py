@@ -12,7 +12,10 @@ class TaskState:
     user_request: str
     files: List[Dict[str, Any]] = field(default_factory=list)
     task_type: str = "document"  # visual_document, knowledge_reasoning, coding
-    selected_model: str = "qwen2.5vl:3b"
+    selected_model: str = "qwen2.5vl:3b"  # primary (entry-point) model name
+    # Ordered list of capability stages for this task, set by router.
+    # Example: ["vision", "reasoning"] for a scanned-PDF → analysis workflow.
+    required_capabilities: List[str] = field(default_factory=list)
     extracted_content: str = ""
     retrieved_context: List[Dict[str, Any]] = field(default_factory=list)
     tool_results: Dict[str, Any] = field(default_factory=dict)

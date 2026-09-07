@@ -1,5 +1,6 @@
 """Agent Graph execution engine per Section 11 of master plan."""
 
+import base64
 import json
 import logging
 import re
@@ -111,36 +112,137 @@ class AgentWorkflowEngine:
             event_type="ocr_started",
             step="document_text_extraction",
             status="started",
-            details={"strategy": "hybrid_pdf_text_and_layout"},
+            details={"strategy": "hybrid_pdf_native_and_vision"},
         )
 
-        extracted_text = ""
+        vision_page_prompt = (
+            f"{DOCUMENT_AGENT_PROMPT}\n\n"
+            "You are an industrial document vision model analyzing a scanned page from an engineering or inspection document.\n"
+            "Extract all useful information visible on this page, including:\n"
+            "- All visible printed and handwritten text\n"
+            "- Equipment identifiers, tags, and asset numbers\n"
+            "- Inspection findings, test readings, and measurements (temperatures, vibrations, dimensions, pressures)\n"
+            "- Tables, forms, matrices, and checklist statuses\n"
+            "- Relevant visual observations, defect descriptions, and abnormalities\n"
+            "- Signatures, stamps, approval notes, and dates\n\n"
+            "CONSTRAINTS:\n"
+            "- Ground everything strictly in the visible content of this image.\n"
+            "- Do not invent information that is not visible.\n"
+            "- Do not fabricate missing values.\n"
+            "- Present tables and extracted structured fields clearly in markdown."
+        )
+
+        files_to_process = []
         for file_info in state.files:
             file_path = file_info.get("path")
             if file_path and Path(file_path).exists():
-                try:
-                    doc = fitz.open(file_path)
-                    text_pages = [page.get_text() for page in doc]
-                    extracted_text += f"\n--- {file_info.get('filename')} ---\n" + "\n".join(text_pages)
-                except Exception as ex:
-                    extracted_text += f"\nError reading {file_info.get('filename')}: {ex}"
+                files_to_process.append((Path(file_path), file_info.get("filename", Path(file_path).name)))
 
-        if not extracted_text.strip():
-            # If no file was provided in task, use the sample inspection report
+        if not files_to_process:
             sample_report = Path(__file__).resolve().parent.parent.parent / "data" / "demo" / "inspection_report_P102A.pdf"
             if sample_report.exists():
-                try:
-                    doc = fitz.open(str(sample_report))
-                    extracted_text = "\n".join(page.get_text() for page in doc)
-                except Exception:
-                    pass
+                files_to_process.append((sample_report, "inspection_report_P102A.pdf (Demo Sample)"))
 
+        if not files_to_process:
+            raise RuntimeError("No document files available for inspection processing.")
+
+        extracted_sections = []
+        for doc_path, filename in files_to_process:
+            file_header = f"=== DOCUMENT: {filename} ==="
+            doc_pages_content = []
+
+            try:
+                doc = fitz.open(str(doc_path))
+            except Exception as ex:
+                logger.error(f"Failed to open document '{filename}': {ex}")
+                raise RuntimeError(f"Invalid or unreadable document '{filename}': {ex}") from ex
+
+            try:
+                total_pages = len(doc)
+                if total_pages == 0:
+                    raise RuntimeError(f"Document '{filename}' contains 0 pages.")
+
+                for page_idx in range(total_pages):
+                    page_num = page_idx + 1
+                    try:
+                        page = doc[page_idx]
+                    except Exception as p_err:
+                        raise RuntimeError(f"Failed to read page {page_num} of '{filename}': {p_err}") from p_err
+
+                    raw_text = page.get_text() or ""
+                    clean_text = raw_text.strip()
+                    alpha_count = sum(1 for c in clean_text if c.isalnum())
+
+                    # Explainable Threshold:
+                    # Standard technical documents have dozens to hundreds of characters per page.
+                    # Pages with fewer than 30 alphanumeric characters contain no meaningful digital text
+                    # (e.g., blank, scanned image, or marginal header noise) and are classified as scanned.
+                    is_scanned = (len(clean_text) == 0 or alpha_count < 30)
+
+                    if not is_scanned:
+                        # Page contains meaningful digital text
+                        doc_pages_content.append(f"--- Page {page_num} [Native Text] ---\n{clean_text}")
+                    else:
+                        # Page is scanned or image-based; render to pixmap and invoke vision model
+                        state.add_event(
+                            event_type="ocr_started",
+                            step="document_text_extraction",
+                            status="started",
+                            model=state.selected_model,
+                            details={"file": filename, "page": page_num, "strategy": "scanned_page_pixmap_vision"},
+                        )
+
+                        # Render scanned page using page.get_pixmap()
+                        try:
+                            pix = page.get_pixmap(dpi=150)
+                            img_bytes = pix.tobytes("png")
+                            if not img_bytes:
+                                raise ValueError(f"Rendered pixmap for page {page_num} is empty.")
+                            b64_image = base64.b64encode(img_bytes).decode("utf-8")
+                        except Exception as render_err:
+                            logger.error(f"Failed rendering page {page_num} of '{filename}': {render_err}")
+                            raise RuntimeError(f"Failed to render scanned page {page_num} of '{filename}': {render_err}") from render_err
+                        finally:
+                            pix = None  # Free pixmap memory immediately
+
+                        # Pass rendered image to existing LocalModelClient
+                        try:
+                            vision_text = local_client.generate(
+                                prompt=vision_page_prompt,
+                                model=state.selected_model,
+                                images=[b64_image],
+                                temperature=0.1,
+                            )
+                            if not vision_text or not vision_text.strip():
+                                raise RuntimeError(f"Vision model returned empty response for scanned page {page_num}.")
+
+                            doc_pages_content.append(f"--- Page {page_num} [Scanned Vision Extraction] ---\n{vision_text.strip()}")
+
+                            state.add_event(
+                                event_type="ocr_completed",
+                                step="document_text_extraction",
+                                status="completed",
+                                model=state.selected_model,
+                                details={"file": filename, "page": page_num, "chars_extracted": len(vision_text)},
+                            )
+                        except Exception as vision_err:
+                            logger.error(f"Vision inference failed for page {page_num} in '{filename}': {vision_err}")
+                            raise RuntimeError(f"Vision inference failed for scanned page {page_num} in '{filename}': {vision_err}") from vision_err
+                        finally:
+                            b64_image = None  # Release image data immediately
+
+                extracted_sections.append(f"{file_header}\n" + "\n\n".join(doc_pages_content))
+            finally:
+                if hasattr(doc, "close"):
+                    doc.close()
+
+        extracted_text = "\n\n".join(extracted_sections)
         state.extracted_content = extracted_text
         state.add_event(
             event_type="ocr_completed",
             step="document_text_extraction",
             status="completed",
-            details={"chars_extracted": len(extracted_text), "source": "Native PDF & OCR pipeline"},
+            details={"chars_extracted": len(extracted_text), "source": "Hybrid Native & Multimodal Vision Extraction"},
         )
 
         # 2. Retrieve SOP Knowledge
@@ -192,20 +294,9 @@ class AgentWorkflowEngine:
 
         try:
             analysis = local_client.generate(prompt=prompt, model=state.selected_model, temperature=0.15)
-        except Exception:
-            # Safe deterministic reasoning fallback if local inference model is offline
-            analysis = (
-                "### 1. Executive Summary & Equipment Identification\n"
-                "Equipment Tag: **P-102A (Crude Distillation Primary Booster Pump)**\n"
-                "The drive-end radial vibration has reached **7.4 mm/s RMS**, and mechanical seal face wear measures **0.45 mm scoring**.\n\n"
-                "### 2. SOP Compliance & Threshold Violations\n"
-                "- **Vibration Non-Conformance (SOP-402, Section 2)**: Measured 7.4 mm/s exceeds the Zone C alert threshold (7.1 mm/s) entering **Zone D (Danger / Unacceptable)**.\n"
-                "- **Bearing Temperature Non-Conformance (SOP-402, Section 3)**: Measured 86.2°C exceeds high alarm threshold (75.0°C).\n"
-                "- **Seal Integrity (SOP-118)**: Scoring depth of 0.45 mm exceeds maximum permissible 0.15 mm.\n\n"
-                "### 3. Approval Determination & Mandatory Directives\n"
-                "1. Authorize immediate controlled duty switch to standby pump P-102B within 4 hours.\n"
-                "2. Tag unit out under Class A Lockout/Tagout permit for seal cartridge replacement."
-            )
+        except Exception as err:
+            logger.error(f"Industrial reasoning model inference failed: {err}")
+            raise RuntimeError(f"Industrial reasoning model inference failed: {err}") from err
 
         state.answer = analysis
 
